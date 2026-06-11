@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QR Code Generated</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8 text-center">
+        <h1 class="text-2xl font-bold text-green-600 mb-2">User Created Successfully!</h1>
+        <p class="text-gray-600 mb-6"><%= name %> (@<%= username %>)</p>
+
+        <div class="mb-8">
+            <p class="text-sm text-gray-500 mb-3">Scan or Download this QR Code</p>
+            <img src="<%= qrUrl %>" class="mx-auto border-4 border-gray-200 rounded-xl" alt="QR Code">
+        </div>
+
+        <a href="<%= qrUrl %>" download="Logora-<%= username %>-QR.png"
+           class="block bg-indigo-600 text-white py-4 rounded-xl font-medium hover:bg-indigo-700 mb-4">
+            ⬇️ Download QR Code PNG
+        </a>
+
+        <p class="text-xs text-red-600 font-medium">
+            ⚠️ Save this QR Code securely. It will not be shown again.
+        </p>
+
+        <a href="/admin" class="mt-8 inline-block text-indigo-600 hover:underline">
+            ← Back to Admin
+        </a>
+    </div>
+</body>
+</html>

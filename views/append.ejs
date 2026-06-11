@@ -1,0 +1,119 @@
+<h1 class="text-3xl font-bold mb-8 text-gray-800">Append Activity</h1>
+
+<div class="bg-white rounded-3xl shadow-xl p-8 max-w-2xl mx-auto">
+
+    <div class="mb-8">
+        <label class="block text-sm font-medium mb-2">Select User</label>
+        <select id="userSelect" class="w-full border rounded-2xl px-5 py-4 text-lg">
+            <% users.forEach(user => { %>
+                <option value="<%= user.id %>"><%= user.name %></option>
+            <% }); %>
+        </select>
+    </div>
+
+    <!-- QR Scanner -->
+    <div class="mb-8">
+        <label class="block text-sm font-medium mb-3">Scan Your Personal QR Code</label>
+        
+        <div id="reader" class="border-4 border-gray-300 rounded-3xl overflow-hidden bg-black relative" 
+             style="height: 420px; max-width: 100%;"></div>
+
+        <div class="text-center mt-4">
+            <p id="scanStatus" class="text-sm text-gray-600">
+                Hold your QR Code in front of the camera<br>
+                <span class="text-xs">Keep it straight and well lit</span>
+            </p>
+        </div>
+
+        <button onclick="restartScanner()" 
+                class="mt-4 text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+            🔄 Restart Camera
+        </button>
+    </div>
+
+    <!-- Activity Form -->
+    <form id="activityForm" action="/append" method="POST" class="hidden">
+        <input type="hidden" name="user_id" id="userIdField">
+        <input type="hidden" name="verification_code" id="secretField">
+
+        <div class="mb-6">
+            <label class="block text-sm font-medium mb-2">What did you do?</label>
+            <textarea name="description" rows="5" required
+                      class="w-full border rounded-2xl px-5 py-4 focus:ring-2 focus:ring-indigo-500"
+                      placeholder="Describe your activity..."></textarea>
+        </div>
+
+        <button type="submit"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-5 rounded-2xl text-lg">
+            ✅ Append Activity
+        </button>
+    </form>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<script>
+let html5QrCode = null;
+
+function startScanner() {
+    if (html5QrCode) html5QrCode.clear();
+
+    html5QrCode = new Html5Qrcode("reader");
+
+    // Improved configuration for better centering and detection
+    const config = {
+        fps: 12,                    // Slightly higher FPS
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+            // Dynamic size: 75% of the smaller edge → much easier to center
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            const size = Math.floor(minEdge * 0.75);
+            return { width: size, height: size };
+        },
+        aspectRatio: 1.0,           // Square viewfinder helps centering
+        disableFlip: false
+    };
+
+    html5QrCode.start(
+        { facingMode: "environment" }, 
+        config,
+        (decodedText) => { handleSuccessfulScan(decodedText); },
+        (error) => {}                 // Ignore constant "no code found" messages
+    ).catch(err => {
+        document.getElementById("scanStatus").innerHTML = 
+            `<span class="text-red-600">Camera error. Try "Restart Camera"</span>`;
+        console.error(err);
+    });
+}
+
+function handleSuccessfulScan(qrData) {
+    try {
+        if (qrData.startsWith("Logora://")) {
+            const parts = qrData.replace("Logora://", "").split(":");
+            const userId = parts[0];
+            const secret = parts[1];
+
+            document.getElementById("userSelect").value = userId;
+            document.getElementById("userIdField").value = userId;
+            document.getElementById("secretField").value = secret;
+
+            document.getElementById("activityForm").classList.remove("hidden");
+            document.getElementById("scanStatus").innerHTML = 
+                `<span class="text-green-600 font-semibold">✓ QR Code Verified!</span>`;
+
+            html5QrCode.stop();
+        } else {
+            alert("Invalid QR Code – please use your Logora personal QR.");
+        }
+    } catch (e) {
+        alert("Error processing QR Code");
+    }
+}
+
+function restartScanner() {
+    if (html5QrCode) html5QrCode.stop().then(() => startScanner());
+    else startScanner();
+}
+
+// Start scanner when page loads
+window.onload = startScanner;
+</script>

@@ -1,0 +1,46 @@
+
+        <h1 class="text-3xl font-bold mb-8">Admin - Manage Users</h1>
+
+        <% if (message) { %>
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+                <%= message || '' %>
+            </div>
+        <% } %>
+
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-4">Create New User</h2>
+            <form action="/admin/create" method="POST" class="flex gap-4">
+                <input type="text" name="username" placeholder="Username" required
+                       class="border rounded px-4 py-2 flex-1">
+                <input type="text" name="name" placeholder="Full Name" required
+                       class="border rounded px-4 py-2 flex-1">
+                <button type="submit" 
+                        class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">
+                    Create User
+                </button>
+            </form>
+        </div>
+
+        <div class="mt-8">
+            <h2 class="text-xl font-semibold mb-4">Existing Users</h2>
+            <table class="w-full bg-white rounded shadow">
+                <thead>
+                    <tr class="bg-gray-50">
+                        <th class="text-left p-4">ID</th>
+                        <th class="text-left p-4">Username</th>
+                        <th class="text-left p-4">Name</th>
+                        <th class="text-left p-4">Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% users.forEach(user => { %>
+                        <tr class="border-t">
+                            <td class="p-4"><%= user.id %></td>
+                            <td class="p-4 font-medium"><%= user.username %></td>
+                            <td class="p-4"><%= user.name %></td>
+                            <td class="p-4 text-gray-500"><%= user.created_at %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
