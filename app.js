@@ -13,6 +13,9 @@ const crypto = require("crypto");
 const app = express();
 const PORT = 3000;
 
+process.env.TZ = "Europe/Rome";
+
+
 app.use(expressLayouts);
 app.set("layout", "layout"); // This points to views/layout.ejs
 
@@ -70,7 +73,7 @@ db.serialize(() => {
 // Helper: get today in YYYY-MM-DD
 function getToday() {
 	const now = new Date();
-	return now.toISOString().split("T")[0];
+	return now.toLocaleDateString("it-IT", {timezone: "Europe/Rome"}); //toISOString().split("T")[0];
 }
 
 // Routes
