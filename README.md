@@ -37,3 +37,12 @@ pm2 start app.js --name "logora"
 pm2 startup
 pm2 save
 ```
+
+# Create certs folder
+mkdir -p certs
+
+# Generate self-signed certificate (valid for 365 days)
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout certs/privkey.pem \
+  -out certs/fullchain.pem \
+  -subj "/C=US/ST=State/L=City/O=TaskAppend/CN=localhost"

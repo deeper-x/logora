@@ -1,5 +1,5 @@
-const https = require('https');
-const fs = require('fs');
+const https = require("https");
+const fs = require("fs");
 
 const express = require("express");
 const session = require("express-session");
@@ -15,6 +15,27 @@ const PORT = 3000;
 
 process.env.TZ = "Europe/Rome";
 
+app.use(
+	session({
+		secret: "daily-log-secret-123", // ← Change this in production!
+		resave: false,
+		saveUninitialized: false,
+		rolling: true, // Refresh session on every request
+		cookie: {
+			maxAge: 8 * 60 * 60 * 1000, // 8 hours in milliseconds
+			httpOnly: true,
+			secure: true, // HTTPS only
+			sameSite: "strict",
+		},
+	}),
+);
+
+function isAuthenticated(req, res, next) {
+	if (req.session.user) {
+		return next();
+	}
+	res.redirect("/login");
+}
 
 app.use(expressLayouts);
 app.set("layout", "layout"); // This points to views/layout.ejs
@@ -73,7 +94,7 @@ db.serialize(() => {
 // Helper: get today in YYYY-MM-DD
 function getToday() {
 	const now = new Date();
-	return now.toLocaleDateString("it-IT", {timezone: "Europe/Rome"}); //toISOString().split("T")[0];
+	return now.toLocaleDateString("it-IT", { timezone: "Europe/Rome" }); //toISOString().split("T")[0];
 }
 
 // Routes
@@ -117,7 +138,7 @@ app.post("/admin/create", (req, res) => {
 	});
 });
 // === DAILY LOG APPEND ===
-app.get("/append", (req, res) => {
+app.get("/append", isAuthenticated, (req, res) => {
 	db.all("SELECT id, name FROM users ORDER BY name", [], (err, users) => {
 		const today = getToday();
 		db.all(
@@ -208,13 +229,12 @@ app.post("/show", (req, res) => {
 	});
 });
 
-
 // Production / HTTPS mode
 const options = {
-        key: fs.readFileSync(path.join(__dirname, 'certs/privkey.pem')),
-        cert: fs.readFileSync(path.join(__dirname, 'certs/fullchain.pem'))
+	key: fs.readFileSync(path.join(__dirname, "certs/privkey.pem")),
+	cert: fs.readFileSync(path.join(__dirname, "certs/fullchain.pem")),
 };
 
 https.createServer(options, app).listen(PORT, () => {
-        console.log(`✅ TaskAppend HTTPS running on https://localhost:${PORT}`);
- });
+	console.log(`✅ TaskAppend HTTPS running on https://localhost:${PORT}`);
+});
