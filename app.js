@@ -99,6 +99,15 @@ function getToday() {
 
 // Routes
 
+// Login page (token / QR entry)
+app.get("/login", (req, res) => {
+	res.render("login", {
+		title: "Login",
+		error: req.query.error,
+		message: req.query.message,
+	});
+});
+
 // HOME - redirect to append
 app.get("/", (req, res) => res.redirect("/append"));
 
@@ -192,6 +201,29 @@ app.get("/show", (req, res) => {
 			title: "View Logs",
 			currentPage: "show",
 		});
+	});
+});
+
+app.post("/login", (req, res) => {
+	const { verification_code } = req.body;
+
+	if (!verification_code) {
+		return res.redirect("/login?error=missing");
+	}
+
+	db.get("SELECT id, name, username FROM users WHERE secret = ?", [verification_code], (err, user) => {
+		if (err || !user) {
+			return res.redirect("/login?error=invalid");
+		}
+
+		// Set session for 8 hours
+		req.session.user = {
+			id: user.id,
+			name: user.name,
+			username: user.username,
+		};
+
+		res.redirect("/append");
 	});
 });
 
